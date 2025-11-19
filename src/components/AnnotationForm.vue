@@ -209,6 +209,30 @@ async function deleteAsNotHuman() {
 }
 
 async function skip() {
+  if (!props.record) return
+  errorMsg.value = ''
+  try {
+    // When skipping, mark as 'skipped' but only if still in_progress (atomic)
+    const payload = { status: 'skipped', annotation_timestamp: new Date().toISOString() }
+    const { data, error } = await supabase
+      .from(props.tableName)
+      .update(payload)
+      .eq('img_id', props.record.img_id)
+      .eq('status', 'in_progress')
+      .select('img_id')
+    if (error) {
+      errorMsg.value = error.message
+      return
+    }
+    if (!data || data.length === 0) {
+      // Someone else changed status; try a fallback: just emit saved so UI moves on
+      emit('saved')
+      return
+    }
+  } catch (e) {
+    errorMsg.value = String(e)
+    return
+  }
   emit('saved')
 }
 
