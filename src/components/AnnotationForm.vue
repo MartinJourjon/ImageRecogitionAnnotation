@@ -117,7 +117,9 @@ const fieldGroups = [
     fields: [
       { key: 'has_makeup', label: 'Has makeup', type: 'boolean' },
       // Removed: crop_type
-      { key: 'notes', label: 'Notes', type: 'textarea' }
+      { key: 'notes', label: 'Notes', type: 'textarea' },
+      // New: blur score for image quality
+      { key: 'blur_score', label: 'Blur', type: 'scale', items: scaleItems }
     ]
   },
   {
@@ -135,6 +137,12 @@ watch(() => props.record, (r) => {
   if (!r) return
   const init = {}
   fieldGroups.forEach(g => g.fields.forEach(f => {
+    // Do NOT initialize annotator_id from DB (use localStorage instead)
+    if (f.key === 'annotator_id') {
+      // set default; will be replaced by localStorage below if present
+      init[f.key] = ''
+      return
+    }
     const v = r[f.key]
     if (v !== undefined && v !== null) {
       init[f.key] = v
@@ -158,8 +166,26 @@ watch(() => props.record, (r) => {
         : 'senior (75+)')
       : 'unknown'
   }
+  // If annotator_id not present in the record, try to load from localStorage so it persists across images
+  if (!init.annotator_id) {
+    try {
+      const stored = localStorage.getItem('annotator_id')
+      if (stored) init.annotator_id = stored
+    } catch (e) {
+      // ignore localStorage errors
+    }
+  }
   form.value = init
 }, { immediate: true })
+
+// Persist annotator_id immediately when user changes it so it stays across navigation
+watch(() => form.value.annotator_id, (v) => {
+  try {
+    if (v) localStorage.setItem('annotator_id', String(v))
+  } catch (e) {
+    // ignore
+  }
+})
 
 const saving = ref(false)
 const deleting = ref(false)
@@ -187,6 +213,12 @@ async function save() {
   if (error) {
     errorMsg.value = error.message
   } else {
+    // Save annotator_id to localStorage so it persists across images
+    try {
+      if (payload.annotator_id) localStorage.setItem('annotator_id', String(payload.annotator_id))
+    } catch (e) {
+      // ignore
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
     emit('saved')
   }
