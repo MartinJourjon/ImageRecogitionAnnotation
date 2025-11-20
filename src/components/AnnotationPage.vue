@@ -184,5 +184,9 @@ window.addEventListener('pagehide', () => {
       <AnnotationForm :record="record" :table-name="tableName" @saved="handleSaved" />
     </div>
     <v-btn color="secondary" class="mt-4" @click="loadNext" :disabled="loading">Reload</v-btn>
+    <v-btn color="primary" class="mt-4 ml-2" to="/annotators" tag="router-link">
+      <v-icon left>mdi-account-multiple</v-icon>
+      Annotators
+    </v-btn>
   </div>
 </template>
