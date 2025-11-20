@@ -27,17 +27,6 @@
                 <span>{{ formatDate(item.last_refreshed) }}</span>
               </template>
 
-              <template #item.actions="{ item }">
-                <v-tooltip>
-                  <template #activator="{ props }">
-                    <v-btn v-bind="props" icon @click="openAnnotator(item.annotator_id)">
-                      <v-icon>mdi-open-in-new</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Open annotator (filter)</span>
-                </v-tooltip>
-              </template>
-
               <template #no-data>
                 <v-alert type="info">No annotators found.</v-alert>
               </template>
@@ -63,8 +52,7 @@ const error = ref('')
 const headers = [
   { title: 'Annotator', key: 'annotator_id', value: 'annotator_id' },
   { title: 'Image count', key: 'image_count', value: 'image_count' },
-  { title: 'Last refreshed', key: 'last_refreshed', value: 'last_refreshed' },
-  { title: 'Actions', key: 'actions', value: 'actions', sortable: false }
+  { title: 'Last refreshed', key: 'last_refreshed', value: 'last_refreshed' }
 ]
 
 function formatDate(d) {
