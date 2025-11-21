@@ -9,7 +9,7 @@ Ce guide explique comment déployer l'application sur votre serveur Ubuntu avec 
 - Git installé
 - Un nom de domaine configuré pointant vers votre serveur
 - Ports 80 et 443 ouverts (HTTP/HTTPS)
-- Port 9000 ouvert pour le webhook GitHub
+- Note : Le webhook est accessible via Nginx reverse proxy, pas besoin d'ouvrir le port 9001
 
 ### Sur votre machine locale :
 - Accès Git au repository
