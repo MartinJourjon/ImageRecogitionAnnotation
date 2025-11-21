@@ -317,6 +317,24 @@ sudo apt upgrade docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 ## Dépannage
 
+### Erreur 'ContainerConfig' lors du démarrage
+
+Si vous obtenez l'erreur `KeyError: 'ContainerConfig'` lors du démarrage :
+
+```bash
+# Solution : nettoyer et reconstruire le service webhook
+./scripts/clean-webhook.sh
+
+# Ou manuellement :
+docker-compose down
+docker rm -f image-annotation-webhook
+docker rmi imagerecogitionannotation-webhook
+docker-compose build --no-cache webhook
+docker-compose up -d
+```
+
+Cette erreur se produit quand l'image Docker est dans un état incohérent après des modifications du Dockerfile.
+
 ### Le webhook ne fonctionne pas
 
 ```bash
