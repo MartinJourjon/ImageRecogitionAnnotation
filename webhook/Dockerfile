@@ -11,11 +11,8 @@ RUN npm ci --omit=dev
 
 COPY server.js ./
 
-# Créer un utilisateur non-root mais membre du groupe docker
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -G docker
-
-USER nodejs
+# Note: Ce service doit s'exécuter en root pour accéder au socket Docker
+# L'accès au socket Docker (/var/run/docker.sock) nécessite des privilèges élevés
 
 EXPOSE 9000
 
