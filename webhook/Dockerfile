@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Copier les fichiers du service webhook
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 COPY server.js ./
 
