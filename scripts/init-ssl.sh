@@ -59,7 +59,12 @@ sleep 5
 
 # 4. Obtenir le certificat SSL
 echo "📜 Demande du certificat SSL..."
-docker-compose run --rm certbot certonly \
+
+# Arrêter certbot s'il tourne (il a un entrypoint qui fait renew)
+docker-compose stop certbot
+
+# Lancer la création du certificat en écrasant l'entrypoint
+docker-compose run --rm --entrypoint "" certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email $EMAIL \

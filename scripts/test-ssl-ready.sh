@@ -98,7 +98,12 @@ echo ""
 echo "5️⃣  Test certbot (simulation)"
 echo "-----------------------------"
 echo "Lancement de certbot en mode test..."
-docker-compose run --rm certbot certonly \
+
+# Arrêter certbot s'il tourne
+docker-compose stop certbot > /dev/null 2>&1
+
+# Lancer le test en écrasant l'entrypoint
+docker-compose run --rm --entrypoint "" certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email $EMAIL \
