@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 .env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +25,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Docker & Deployment
+certbot/
+backups/
+nginx/ssl/
+*.backup
+
+# Nginx SSL config (sera généré par le script)
+nginx/conf.d/app.conf

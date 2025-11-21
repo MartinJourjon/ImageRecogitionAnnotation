@@ -1,0 +1,13 @@
+{
+  "name": "github-webhook-autodeploy",
+  "version": "1.0.0",
+  "description": "Service webhook pour auto-déploiement depuis GitHub",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "crypto": "^1.0.1"
+  }
+}
