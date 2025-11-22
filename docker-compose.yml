@@ -23,6 +23,7 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - app-network
+      - pg-network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -93,3 +94,5 @@ services:
 networks:
   app-network:
     driver: bridge
+  pg-network:
+    external: true
