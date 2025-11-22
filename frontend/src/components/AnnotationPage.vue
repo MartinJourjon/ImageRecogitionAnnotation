@@ -78,6 +78,8 @@ async function loadNext() {
 function handleSaved() {
   // The form emitted 'saved' after a save/skip/delete; clear local lock (server should be updated by form)
   lockedImgId = null
+  // Scroll to top for better UX when loading next annotation
+  window.scrollTo({ top: 0, behavior: 'smooth' })
   loadNext()
 }
 

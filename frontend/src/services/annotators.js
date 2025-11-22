@@ -30,12 +30,13 @@ export async function listAnnotators(limit = 10) {
 }
 
 // Fonction pour récupérer les annotations d'un utilisateur
-// Note: Cette fonction retourne un tableau vide car le backend n'a pas d'endpoint pour ça
-// Pour l'implémenter complètement, il faudrait créer un endpoint backend
 export async function getAnnotationsByUser(userId, days = 14) {
-  // TODO: Implémenter un endpoint backend pour récupérer les annotations par utilisateur
-  // Pour l'instant, retourne un tableau vide
-  return []
+  const { data, error } = await apiClient.get(`/annotators/history?days=${days}`)
+  if (error) {
+    console.error('Error fetching annotation history:', error)
+    return []
+  }
+  return data || []
 }
 
 // Fonction de subscription en temps réel

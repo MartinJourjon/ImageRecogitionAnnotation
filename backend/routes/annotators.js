@@ -197,6 +197,28 @@ router.post('/stats/refresh', async (req, res) => {
   }
 });
 
+// Get user's annotation history (for dashboard chart)
+router.get('/history', async (req, res) => {
+  const days = parseInt(req.query.days) || 14;
+
+  try {
+    const result = await pool.query(
+      `SELECT img_id, annotation_timestamp as created_at
+       FROM annotations
+       WHERE annotator_id = $1::text
+         AND status = 'done'
+         AND annotation_timestamp >= NOW() - INTERVAL '1 day' * $2
+       ORDER BY annotation_timestamp DESC`,
+      [req.userId, days]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Get annotation history error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get leaderboard (top annotators by XP) - Uses cached table for performance
 router.get('/leaderboard', async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
