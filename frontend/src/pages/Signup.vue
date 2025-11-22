@@ -37,7 +37,7 @@ async function signUp() {
           <v-card-text>
             <v-alert v-if="error" type="error">{{ error }}</v-alert>
             <v-text-field label="Email" v-model="email" />
-            <v-text-field label="Nickname (optional)" v-model="nickname" />
+            <v-text-field label="Annotator Name" v-model="nickname" />
             <v-text-field label="Password" type="password" v-model="password" />
           </v-card-text>
           <v-card-actions>
