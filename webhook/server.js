@@ -17,18 +17,23 @@ if (!WEBHOOK_SECRET) {
     process.exit(1);
 }
 
-// Middleware pour parser le body en raw avec limite augmentée
-app.use(express.json({
+// Middleware pour capturer le raw body avant parsing
+app.use(express.raw({
+    type: 'application/json',
     limit: '10mb',
     verify: (req, res, buf) => {
         req.rawBody = buf.toString('utf8');
     }
 }));
 
-// Fallback si rawBody n'est pas défini
+// Middleware pour parser le JSON après avoir capturé le raw body
 app.use((req, res, next) => {
-    if (!req.rawBody && req.body) {
-        req.rawBody = JSON.stringify(req.body);
+    if (req.rawBody) {
+        try {
+            req.body = JSON.parse(req.rawBody);
+        } catch (e) {
+            console.error('Erreur parsing JSON:', e);
+        }
     }
     next();
 });
@@ -69,7 +74,24 @@ async function redeploy() {
     console.log('🚀 Début du redéploiement...');
 
     try {
-        // 1. Pull les dernières modifications
+        // 0. Configurer le répertoire comme safe (nécessaire en Docker)
+        console.log('🔧 Configuration Git...');
+        await execAsync('git config --global --add safe.directory /app/repo');
+
+        // 1. Vérifier et configurer le remote pour utiliser HTTPS (pas SSH)
+        console.log('🔗 Configuration du remote Git...');
+        const { stdout: remoteUrl } = await execAsync('cd /app/repo && git remote get-url origin');
+
+        // Si l'URL utilise SSH, la convertir en HTTPS
+        if (remoteUrl.trim().startsWith('git@github.com:')) {
+            const httpsUrl = remoteUrl.trim()
+                .replace('git@github.com:', 'https://github.com/')
+                .replace(/\.git\s*$/, '');
+            console.log(`   Conversion SSH → HTTPS: ${httpsUrl}`);
+            await execAsync(`cd /app/repo && git remote set-url origin ${httpsUrl}`);
+        }
+
+        // 2. Pull les dernières modifications
         console.log('📥 Git pull...');
         await execAsync('cd /app/repo && git pull origin ' + GITHUB_BRANCH);
 
