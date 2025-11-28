@@ -95,12 +95,13 @@ async function redeploy() {
         console.log('📥 Git pull...');
         await execAsync('cd /app/repo && git pull origin ' + GITHUB_BRANCH);
 
-        // 2. Rebuild et redémarrer les containers
+        // 3. Rebuild les images Docker (sauf webhook)
         console.log('🔨 Rebuild des images Docker...');
-        await execAsync('cd /app/repo && docker-compose build --no-cache');
+        await execAsync('cd /app/repo && docker-compose build --no-cache backend frontend');
 
-        console.log('🔄 Redémarrage des services...');
-        await execAsync('cd /app/repo && docker-compose up -d --force-recreate');
+        // 4. Redémarrer les services applicatifs (pas le webhook)
+        console.log('🔄 Redémarrage des services applicatifs...');
+        await execAsync('cd /app/repo && docker-compose up -d --force-recreate backend frontend nginx certbot');
 
         console.log('✅ Redéploiement terminé avec succès !');
         return { success: true, message: 'Déploiement réussi' };
