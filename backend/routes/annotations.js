@@ -45,6 +45,85 @@ router.get('/diagnostic', async (req, res) => {
   }
 });
 
+// Global annotation statistics (for admin dashboard)
+router.get('/stats/global', async (req, res) => {
+  try {
+    // Overall annotation counts by status
+    const statusStats = await pool.query(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
+        COUNT(CASE WHEN status = 'done' THEN 1 END) as done,
+        COUNT(CASE WHEN status = 'skipped' THEN 1 END) as skipped
+      FROM annotations
+    `);
+
+    // Annotations completed per day (last 30 days)
+    const dailyStats = await pool.query(`
+      SELECT
+        DATE(annotation_timestamp) as date,
+        COUNT(*) as count
+      FROM annotations
+      WHERE status = 'done'
+        AND annotation_timestamp >= NOW() - INTERVAL '30 days'
+      GROUP BY DATE(annotation_timestamp)
+      ORDER BY date DESC
+    `);
+
+    // Top annotators by completed annotations
+    const topAnnotators = await pool.query(`
+      SELECT
+        a.nickname,
+        COUNT(an.img_id) as annotations_count,
+        a.xp,
+        a.total_points
+      FROM annotators a
+      LEFT JOIN annotations an ON an.annotator_id = a.user_id::text AND an.status = 'done'
+      GROUP BY a.user_id, a.nickname, a.xp, a.total_points
+      ORDER BY annotations_count DESC
+      LIMIT 5
+    `);
+
+    // Recent activity (last 10 completed annotations)
+    const recentActivity = await pool.query(`
+      SELECT
+        an.img_id,
+        an.annotation_timestamp,
+        a.nickname as annotator_nickname
+      FROM annotations an
+      LEFT JOIN annotators a ON a.user_id::text = an.annotator_id
+      WHERE an.status = 'done'
+      ORDER BY an.annotation_timestamp DESC
+      LIMIT 10
+    `);
+
+    // Average annotations per annotator
+    const avgStats = await pool.query(`
+      SELECT
+        COUNT(DISTINCT annotator_id) as total_annotators,
+        ROUND(AVG(annotation_count), 2) as avg_annotations_per_annotator
+      FROM (
+        SELECT annotator_id, COUNT(*) as annotation_count
+        FROM annotations
+        WHERE status = 'done' AND annotator_id IS NOT NULL
+        GROUP BY annotator_id
+      ) as annotator_counts
+    `);
+
+    res.json({
+      status_stats: statusStats.rows[0],
+      daily_stats: dailyStats.rows,
+      top_annotators: topAnnotators.rows,
+      recent_activity: recentActivity.rows,
+      avg_stats: avgStats.rows[0]
+    });
+  } catch (error) {
+    console.error('Get global stats error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get next pending annotation
 router.get('/next', async (req, res) => {
   try {

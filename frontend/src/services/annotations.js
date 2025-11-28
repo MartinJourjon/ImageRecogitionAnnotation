@@ -23,3 +23,7 @@ export async function skipAnnotation(imgId) {
 export async function deleteAnnotation(imgId) {
   return apiClient.delete(`/annotations/${imgId}`)
 }
+
+export async function getGlobalStats() {
+  return apiClient.get('/annotations/stats/global')
+}

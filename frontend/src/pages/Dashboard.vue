@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useUserStore } from '../stores/user'
 import * as annotatorsService from '../services/annotators'
 import UserCard from '../components/gamification/UserCard.vue'
 import XpBar from '../components/gamification/XpBar.vue'
 import LevelBadge from '../components/gamification/LevelBadge.vue'
 import RankingTable from '../components/gamification/RankingTable.vue'
+import GlobalStatsBoard from '../components/admin/GlobalStatsBoard.vue'
 
 const store = useUserStore()
 const annotationsSeries = ref([])
@@ -13,6 +14,9 @@ const categories = ref([])
 const loading = ref(true)
 const annotators = ref([])
 let channel = null
+
+// Vérifier si l'utilisateur est admin
+const isAdmin = computed(() => store.role === 'admin')
 
 function computeSeries(days = 14, items = []) {
   const map = {}
@@ -79,6 +83,20 @@ onBeforeUnmount(() => {
 
 <template>
   <v-container fluid>
+    <!-- Section admin : Statistiques globales -->
+    <v-row v-if="isAdmin" class="mb-4">
+      <v-col cols="12">
+        <v-alert type="info" variant="tonal" class="mb-4">
+          <div class="d-flex align-center">
+            <v-icon class="mr-2">mdi-shield-crown</v-icon>
+            <span class="font-weight-bold">Tableau de bord administrateur</span>
+          </div>
+        </v-alert>
+        <global-stats-board />
+      </v-col>
+    </v-row>
+
+    <!-- Section utilisateur : Profil et statistiques personnelles -->
     <v-row>
       <v-col cols="12" md="4">
         <v-card class="pa-4">
