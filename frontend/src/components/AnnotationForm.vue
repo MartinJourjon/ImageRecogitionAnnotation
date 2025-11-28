@@ -49,6 +49,21 @@ const scaleItems = [
   { title: '10 - Extreme / Very visible', value: 10 }
 ]
 
+// Nouvelle échelle pour la confiance (annotation_confidence)
+const confidenceScaleItems = [
+  { title: '0 - Not confident at all', value: 0 },
+  { title: '1 - Very very low confidence', value: 1 },
+  { title: '2 - Very low confidence', value: 2 },
+  { title: '3 - Low confidence', value: 3 },
+  { title: '4 - Rather low confidence', value: 4 },
+  { title: '5 - Medium confidence', value: 5 },
+  { title: '6 - Rather high confidence', value: 6 },
+  { title: '7 - High confidence', value: 7 },
+  { title: '8 - Very high confidence', value: 8 },
+  { title: '9 - Very very high confidence', value: 9 },
+  { title: '10 - Extremely confident', value: 10 }
+]
+
 const fieldGroups = [
   {
     title: 'Patient metadata',
@@ -125,7 +140,7 @@ const fieldGroups = [
   {
     title: 'Annotation',
     fields: [
-      { key: 'annotation_confidence', label: 'Confidence (0–10)', type: 'scale', items: scaleItems }
+      { key: 'annotation_confidence', label: 'Confidence (0–10)', type: 'scale', items: confidenceScaleItems }
     ]
   }
 ]
@@ -140,7 +155,16 @@ watch(() => props.record, (r) => {
     if (v !== undefined && v !== null) {
       init[f.key] = v
     } else {
-      init[f.key] = f.type === 'boolean' ? false : (f.type === 'scale' ? 0 : (f.type === 'number' ? 0 : ''))
+      // Defaults: booleans -> false, numbers -> 0, scales -> 0 except annotation_confidence -> 5
+      if (f.type === 'boolean') {
+        init[f.key] = false
+      } else if (f.type === 'scale') {
+        init[f.key] = f.key === 'annotation_confidence' ? 5 : 0
+      } else if (f.type === 'number') {
+        init[f.key] = 0
+      } else {
+        init[f.key] = ''
+      }
     }
   }))
   // Defaults and legacy mapping
