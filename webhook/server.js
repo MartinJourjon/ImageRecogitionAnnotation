@@ -17,27 +17,51 @@ if (!WEBHOOK_SECRET) {
     process.exit(1);
 }
 
-// Middleware pour parser le body en raw
+// Middleware pour parser le body en raw avec limite augmentée
 app.use(express.json({
+    limit: '10mb',
     verify: (req, res, buf) => {
-        req.rawBody = buf.toString();
+        req.rawBody = buf.toString('utf8');
     }
 }));
+
+// Fallback si rawBody n'est pas défini
+app.use((req, res, next) => {
+    if (!req.rawBody && req.body) {
+        req.rawBody = JSON.stringify(req.body);
+    }
+    next();
+});
 
 // Fonction pour vérifier la signature GitHub
 function verifyGitHubSignature(req) {
     const signature = req.headers['x-hub-signature-256'];
     if (!signature) {
+        console.log('⚠️  Aucune signature trouvée dans les headers');
+        return false;
+    }
+
+    // Vérifier que rawBody existe
+    if (!req.rawBody) {
+        console.error('❌ rawBody est undefined');
         return false;
     }
 
     const hmac = crypto.createHmac('sha256', WEBHOOK_SECRET);
     const digest = 'sha256=' + hmac.update(req.rawBody).digest('hex');
 
-    return crypto.timingSafeEqual(
+    const isValid = crypto.timingSafeEqual(
         Buffer.from(signature),
         Buffer.from(digest)
     );
+
+    if (!isValid) {
+        console.log('⚠️  Signature ne correspond pas');
+        console.log('   Reçue:', signature);
+        console.log('   Attendue:', digest);
+    }
+
+    return isValid;
 }
 
 // Fonction pour exécuter le redéploiement
